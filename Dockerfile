@@ -32,6 +32,7 @@ RUN wget https://github.com/levito/tt-rss-feedly-theme/archive/master.zip && unz
 # install plugins
 WORKDIR /var/www/plugins
 RUN wget https://github.com/voidstern/tt-rss-newsplus-plugin/archive/master.tar.gz \
+  && mkdir -p api_newsplus \
   && tar xzvpf master.tar.gz --strip-components=2 -C api_newsplus tt-rss-newsplus-plugin-master/api_newsplus \
   && rm master.tar.gz
 
