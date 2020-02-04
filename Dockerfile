@@ -28,7 +28,12 @@ RUN cp config.php-dist config.php
 WORKDIR /var/www/themes.local
 RUN wget https://github.com/levito/tt-rss-feedly-theme/archive/master.zip && unzip master.zip \
   && cp -r tt-rss-feedly-theme-master/feedly* . && rm -rf tt-rss-feedly-theme-master master.zip
-WORKDIR /var/www
+
+# install plugins
+WORKDIR /var/www/plugins
+RUN wget https://github.com/voidstern/tt-rss-newsplus-plugin/archive/master.tar.gz \
+  && tar xzvpf master.tar.gz --strip-components=2 -C api_newsplus tt-rss-newsplus-plugin-master/api_newsplus \
+  && rm master.tar.gz
 
 # clean up
 RUN set -xe \
@@ -50,6 +55,7 @@ ENV DB_USER ttrss
 ENV DB_PASS ttrss
 
 # always re-configure database with current ENV when RUNning container, then monitor all services
+WORKDIR /var/www
 ADD configure-db.php /configure-db.php
 ADD s6/ /etc/s6/
 RUN chmod -R +x /etc/s6/
