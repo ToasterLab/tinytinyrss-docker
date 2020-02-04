@@ -36,7 +36,7 @@ RUN set -xe \
   && apk del --progress --purge \
   && rm -rf /var/cache/apk/* \
   && rm -rf /var/lib/apt/lists/* \
-  && chown nobody:nginx -R /var/ww
+  && chown nobody:nginx -R /var/www
 
 # expose only nginx HTTP port
 EXPOSE 80
