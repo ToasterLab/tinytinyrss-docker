@@ -36,7 +36,7 @@ RUN set -xe \
   && apk del --progress --purge \
   && rm -rf /var/cache/apk/* \
   && rm -rf /var/lib/apt/lists/* \
-  && chown nobody:nginx -R /var/www
+  && chown nobody:nginx -R /var/ww
 
 # expose only nginx HTTP port
 EXPOSE 80
@@ -52,4 +52,5 @@ ENV DB_PASS ttrss
 # always re-configure database with current ENV when RUNning container, then monitor all services
 ADD configure-db.php /configure-db.php
 ADD s6/ /etc/s6/
+RUN chmod -R +x /etc/s6/
 CMD php /configure-db.php && exec s6-svscan /etc/s6/
