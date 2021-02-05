@@ -1,4 +1,4 @@
-FROM alpine
+FROM alpine:latest
 MAINTAINER Huey Lee <leejinhuey@gmail.com>
   
 RUN set -xe && \
@@ -42,7 +42,16 @@ RUN wget https://github.com/voidstern/tt-rss-newsplus-plugin/archive/master.tar.
   && rm master.tar.gz \
   && wget https://github.com/DigitalDJ/tinytinyrss-fever-plugin/archive/master.tar.gz \
   && mkdir -p fever-plugin \
-  && tar xzvpf master.tar.gz --strip-components=1 -C fever-plugin tinytinyrss-fever-plugin-master
+  && tar xzvpf master.tar.gz --strip-components=1 -C fever-plugin tinytinyrss-fever-plugin-master \
+  && rm master.tar.gz \
+  && wget https://github.com/Alekc/af_refspoof/archive/master.tar.gz \
+  && mkdir -p af_refspoof \
+  && tar xzvpf master.tar.gz --strip-components=1 -C af_refspoof af_refspoof-master \
+  && rm master.tar.gz \
+  && wget https://git.tt-rss.org/fox/ttrss-time-to-read/archive/master.tar.gz \
+  && mkdir -p time-to-read \
+  && tar xzvpf master.tar.gz --strip-components=1 -C time-to-read ttrss-time-to-read \
+  && rm master.tar.gz 
 
 # clean up
 RUN set -xe \

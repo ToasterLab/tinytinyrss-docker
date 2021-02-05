@@ -42,6 +42,8 @@ This image includes the following plugins:
 - [News+ plugin](https://github.com/voidstern/tt-rss-newsplus-plugin)
 - [oneclickpocket](https://github.com/fxneumann/oneclickpocket)
 - [Fever API plugin](https://github.com/DigitalDJ/tinytinyrss-fever-plugin/)
+- [af_refspoof](https://github.com/Alekc/af_refspoof)
+- [time-to-read](https://git.tt-rss.org/fox/ttrss-time-to-read)
 
 ## Themes
 
