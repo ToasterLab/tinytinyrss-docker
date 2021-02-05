@@ -34,3 +34,17 @@ The `SELF_URL_PATH` config value should be set to the URL where this container w
 ```
 SELF_URL_PATH=https://example.org/ttrss
 ```
+
+## Plugins
+
+This image includes the following plugins:
+
+- [News+ plugin](https://github.com/voidstern/tt-rss-newsplus-plugin)
+- [oneclickpocket](https://github.com/fxneumann/oneclickpocket)
+- [Fever API plugin](https://github.com/DigitalDJ/tinytinyrss-fever-plugin/)
+
+## Themes
+
+This image includes the following themes:
+
+- [Feedly theme](https://github.com/levito/tt-rss-feedly-theme)

@@ -39,7 +39,10 @@ RUN wget https://github.com/voidstern/tt-rss-newsplus-plugin/archive/master.tar.
   && wget https://github.com/fxneumann/oneclickpocket/archive/master.tar.gz \
   && mkdir -p oneclickpocket \
   && tar xzvpf master.tar.gz --strip-components=1 -C oneclickpocket oneclickpocket-master \
-  && rm master.tar.gz
+  && rm master.tar.gz \
+  && wget https://github.com/DigitalDJ/tinytinyrss-fever-plugin/archive/master.tar.gz \
+  && mkdir -p fever-plugin \
+  && tar xzvpf master.tar.gz --strip-components=1 -C fever-plugin tinytinyrss-fever-plugin-master
 
 # clean up
 RUN set -xe \
