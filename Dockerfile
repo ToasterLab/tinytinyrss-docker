@@ -6,6 +6,7 @@ RUN set -xe && \
   apk --update --no-cache add \
     ca-certificates \
     busybox \
+    sudo \
     s6 \
     gettext \
     git \
@@ -13,6 +14,7 @@ RUN set -xe && \
     nginx \
     openssl \
     postgresql-contrib \
+    postgresql-client \
     php8 \
     php8-curl \
     php8-dom \
@@ -96,11 +98,13 @@ ENV \
     TTRSS_DB_PORT="5432" \
     TTRSS_DB_TYPE="pgsql" \
     TTRSS_DB_USER="ttrss" \
-    TTRSS_SELF_URL_PATH="http://localhost:8000/"
+    TTRSS_SELF_URL_PATH="http://localhost:8000/" \
+    TTRSS_MYSQL_CHARSET="UTF8" \
+    TTRSS_PHP_EXECUTABLE="/usr/bin/php8"
 
 # always re-configure database with current ENV when RUNning container, then monitor all services
 WORKDIR /var/www
-ADD configure-db.php /configure-db.php
+ADD startup.sh /startup.sh
 ADD s6/ /etc/s6/
-RUN chmod -R +x /etc/s6/
-CMD php /configure-db.php && exec s6-svscan /etc/s6/
+RUN chmod -R +x /etc/s6/ && chmod +x /startup.sh
+CMD /startup.sh && exec s6-svscan /etc/s6/
