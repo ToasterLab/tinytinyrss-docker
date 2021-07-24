@@ -22,7 +22,6 @@ RUN set -xe && \
     php8-json \
     php8-iconv \
     php8-intl \
-    php8-mcrypt \
     php8-mbstring \
     php8-mysqlnd \
     php8-opcache \
