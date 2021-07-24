@@ -3,14 +3,40 @@ MAINTAINER Huey Lee <leejinhuey@gmail.com>
   
 RUN set -xe && \
   apk update && apk upgrade && \
-  apk add --no-cache \
-  busybox nginx s6 ca-certificates \
-  php7 php7-cli php7-fpm php7-curl php7-dom php7-gd php7-iconv php7-fileinfo php7-json \
-  php7-mcrypt php7-pgsql php7-pcntl php7-pdo php7-pdo_pgsql \
-  php7-mysqli php7-pdo_mysql \
-  php7-mbstring php7-posix php7-session php7-intl git \
-  postgresql-contrib && \
-  apk add --no-cache --virtual=build-deps curl wget tar
+  apk --update --no-cache add \
+    ca-certificates \
+    busybox \
+    s6 \
+    gettext \
+    git \
+    busybox \
+    nginx \
+    openssl \
+    postgresql-contrib \
+    php8 \
+    php8-curl \
+    php8-dom \
+    php8-fileinfo \
+    php8-fpm \
+    php8-gd \
+    php8-json \
+    php8-iconv \
+    php8-intl \
+    php8-mcrypt \
+    php8-mbstring \
+    php8-mysqlnd \
+    php8-opcache \
+    php8-openssl \
+    php8-pcntl \
+    php8-pdo_mysql \
+    php8-pdo_pgsql \
+    php8-pgsql \
+    php8-posix \
+    php8-session \
+    php8-tokenizer \
+    php8-xsl \
+  && ln -sv /usr/bin/php8 /usr/bin/php \
+  && apk add --no-cache --virtual=build-deps curl wget tar
     
 # Add user www-data for php-fpm.
 # 82 is the standard uid/gid for "www-data" in Alpine.
@@ -64,13 +90,14 @@ RUN set -xe \
 # expose only nginx HTTP port
 EXPOSE 80
 
-# complete path to ttrss
-ENV SELF_URL_PATH http://localhost
-
-# expose default database credentials via ENV in order to ease overwriting
-ENV DB_NAME ttrss
-ENV DB_USER ttrss
-ENV DB_PASS ttrss
+ENV \
+    TTRSS_DB_HOST="database" \
+    TTRSS_DB_NAME="ttrss" \
+    TTRSS_DB_PASS="ttrss" \
+    TTRSS_DB_PORT="5432" \
+    TTRSS_DB_TYPE="pgsql" \
+    TTRSS_DB_USER="ttrss" \
+    TTRSS_SELF_URL_PATH="http://localhost:8000/"
 
 # always re-configure database with current ENV when RUNning container, then monitor all services
 WORKDIR /var/www
