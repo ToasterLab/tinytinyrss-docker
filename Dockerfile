@@ -1,110 +1,45 @@
-FROM alpine:latest
-MAINTAINER Huey Lee <leejinhuey@gmail.com>
-  
-RUN set -xe && \
-  apk update && apk upgrade && \
-  apk --update --no-cache add \
-    ca-certificates \
-    busybox \
-    sudo \
-    s6 \
-    gettext \
-    git \
-    busybox \
-    nginx \
-    openssl \
-    postgresql-contrib \
-    postgresql-client \
-    php8 \
-    php8-curl \
-    php8-dom \
-    php8-fileinfo \
-    php8-fpm \
-    php8-gd \
-    php8-json \
-    php8-iconv \
-    php8-intl \
-    php8-mbstring \
-    php8-mysqlnd \
-    php8-opcache \
-    php8-openssl \
-    php8-pcntl \
-    php8-pdo_mysql \
-    php8-pdo_pgsql \
-    php8-pgsql \
-    php8-posix \
-    php8-session \
-    php8-tokenizer \
-    php8-xsl \
-  && ln -sv /usr/bin/php8 /usr/bin/php \
-  && apk add --no-cache --virtual=build-deps curl wget tar
-    
-# Add user www-data for php-fpm.
-# 82 is the standard uid/gid for "www-data" in Alpine.
-RUN adduser -u 82 -D -S -G www-data www-data
+FROM alpine:3.13
+EXPOSE 9000/tcp
 
-# add ttrss as the only nginx site
-ADD ttrss.nginx.conf /etc/nginx/nginx.conf
+ENV SCRIPT_ROOT=/opt/tt-rss
 
-# install ttrss and patch configuration
-RUN rm -rf /var/www && \
-  git clone https://git.tt-rss.org/fox/tt-rss --depth=1 /var/www
-WORKDIR /var/www
-RUN cp config.php-dist config.php
+RUN apk add --no-cache dcron php8 php8-fpm \
+	php8-pdo php8-gd php8-pgsql php8-pdo_pgsql \
+	php8-mbstring php8-intl php8-xml php8-curl \
+	php8-session php8-tokenizer php8-dom php8-fileinfo \
+	php8-json php8-iconv php8-pcntl php8-posix php8-zip php8-exif \
+	php8-openssl git postgresql-client sudo php8-pecl-xdebug rsync && \
+	sed -i 's/\(memory_limit =\) 128M/\1 256M/' /etc/php8/php.ini && \
+	sed -i -e 's/^listen = 127.0.0.1:9000/listen = 9000/' \
+		-e 's/;\(clear_env\) = .*/\1 = no/i' \
+		-e 's/^\(user\|group\) = .*/\1 = app/i' \
+		-e 's/;\(php_admin_value\[error_log\]\) = .*/\1 = \/tmp\/error.log/' \
+		-e 's/;\(php_admin_flag\[log_errors\]\) = .*/\1 = on/' \
+			/etc/php8/php-fpm.d/www.conf && \
+	mkdir -p /var/www ${SCRIPT_ROOT}/config.d
 
-# install themes
-WORKDIR /var/www/themes.local
-RUN wget https://github.com/levito/tt-rss-feedly-theme/archive/master.zip && unzip master.zip \
-  && cp -r tt-rss-feedly-theme-master/feedly* . && rm -rf tt-rss-feedly-theme-master master.zip
+ADD startup.sh ${SCRIPT_ROOT}
+# ADD updater.sh ${SCRIPT_ROOT}
+# ADD index.php ${SCRIPT_ROOT}
+# ADD dcron.sh ${SCRIPT_ROOT}
+# ADD backup.sh /etc/periodic/weekly/backup
+# ADD config.docker.php ${SCRIPT_ROOT}
 
-# install plugins
-WORKDIR /var/www/plugins
-RUN wget https://github.com/voidstern/tt-rss-newsplus-plugin/archive/master.tar.gz \
-  && mkdir -p api_newsplus \
-  && tar xzvpf master.tar.gz --strip-components=2 -C api_newsplus tt-rss-newsplus-plugin-master/api_newsplus \
-  && rm master.tar.gz \
-  && wget https://github.com/fxneumann/oneclickpocket/archive/master.tar.gz \
-  && mkdir -p oneclickpocket \
-  && tar xzvpf master.tar.gz --strip-components=1 -C oneclickpocket oneclickpocket-master \
-  && rm master.tar.gz \
-  && wget https://github.com/DigitalDJ/tinytinyrss-fever-plugin/archive/master.tar.gz \
-  && mkdir -p fever-plugin \
-  && tar xzvpf master.tar.gz --strip-components=1 -C fever-plugin tinytinyrss-fever-plugin-master \
-  && rm master.tar.gz \
-  && wget https://github.com/Alekc/af_refspoof/archive/master.tar.gz \
-  && mkdir -p af_refspoof \
-  && tar xzvpf master.tar.gz --strip-components=1 -C af_refspoof af_refspoof-master \
-  && rm master.tar.gz \
-  && wget https://git.tt-rss.org/fox/ttrss-time-to-read/archive/master.tar.gz \
-  && mkdir -p time-to-read \
-  && tar xzvpf master.tar.gz --strip-components=1 -C time-to-read ttrss-time-to-read \
-  && rm master.tar.gz 
+ENV OWNER_UID=1000
+ENV OWNER_GID=1000
 
-# clean up
-RUN set -xe \
-  && apk del build-deps \
-  && apk del --progress --purge \
-  && rm -rf /var/cache/apk/* \
-  && rm -rf /var/lib/apt/lists/* \
-  && chown nobody:nginx -R /var/www
+# TTRSS_XDEBUG_HOST defaults to host IP if unset
+ENV TTRSS_XDEBUG_ENABLED=""
+ENV TTRSS_XDEBUG_HOST=""
+ENV TTRSS_XDEBUG_PORT="9000"
 
-# expose only nginx HTTP port
-EXPOSE 80
+ENV TTRSS_DB_TYPE="pgsql"
+ENV TTRSS_DB_HOST="db"
+ENV TTRSS_DB_PORT="5432"
 
-ENV \
-    TTRSS_DB_HOST="database" \
-    TTRSS_DB_NAME="ttrss" \
-    TTRSS_DB_PASS="ttrss" \
-    TTRSS_DB_PORT="5432" \
-    TTRSS_DB_TYPE="pgsql" \
-    TTRSS_DB_USER="ttrss" \
-    TTRSS_SELF_URL_PATH="http://localhost:8000/" \
-    TTRSS_MYSQL_CHARSET="UTF8" \
-    TTRSS_PHP_EXECUTABLE="/usr/bin/php8"
+ENV TTRSS_MYSQL_CHARSET="UTF8"
+ENV TTRSS_PHP_EXECUTABLE="/usr/bin/php8"
+ENV TTRSS_PLUGINS="auth_internal, note, nginx_xaccel"
 
-# always re-configure database with current ENV when RUNning container, then monitor all services
-WORKDIR /var/www
-ADD startup.sh /startup.sh
-ADD s6/ /etc/s6/
-RUN chmod -R +x /etc/s6/ && chmod +x /startup.sh
-CMD /startup.sh && exec s6-svscan /etc/s6/
+RUN chmod +x ${SCRIPT_ROOT}/startup.sh
+CMD ${SCRIPT_ROOT}/startup.sh
